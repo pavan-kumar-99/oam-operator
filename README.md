@@ -80,10 +80,6 @@ Events:
   Normal  Created  23s   Application  Created Ingress
 ```
 
-![image](https://user-images.githubusercontent.com/54094196/134849413-313137a5-bc45-40fc-89e2-9b433f5fd868.png)
-
-![image](https://user-images.githubusercontent.com/54094196/134816606-95494ff2-561b-4e06-9f39-4a8a4febfdb2.png)
-
 #### Cleanup
 ```
 $ make uninstall 
