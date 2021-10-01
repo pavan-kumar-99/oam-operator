@@ -1,0 +1,96 @@
+
+[![Build Status](https://devops-ci.elastic.co/buildStatus/icon?job=cloud-on-k8s-e2e-tests-master&subject=E2E%20tests)](https://devops-ci.elastic.co/job/cloud-on-k8s-e2e-tests-master/)
+[![GitHub release](https://img.shields.io/github/v/release/elastic/cloud-on-k8s.svg)](https://github.com/infacloud/oam-operator/releases/latest)
+[![Docker build](https://img.shields.io/docker/automated/onuryilmaz/k8s-operator-example.svg)](https://hub.docker.com/r/onuryilmaz/k8s-operator-example/tags/)
+
+# Oam Operator ( The CNCF Accelerator )
+
+A Kubernetes Operator, that would help all the DevOps teams to accelerate their Journey into the cloud and K8s. OAM operator scaffolds all of the code required to create resources across various cloud provides, which includes both K8s and Non-K8s resources. For example an user can create all the required resources for the application ( K8s resources like Deployments, Statefulsets, Ingresses, Non-k8s resources like S3, RDS, EKS clusters ) with 10 lines of YAML. See [Example Usage](#example-usage)
+
+
+## Overview
+* [Architecture](#oam-operator-architecture)
+* [Deploy the CRD's](#deploy-the-crds)
+  - [Using make](#using-make)
+  - [Using kubectl](#using-kubectl)
+* [Deploy the Operator](#deploy-the-operator)
+  - [Using make](#using-make)
+* [Example Usage](#example-usage)
+  - [Create custom resource](#create-custom-resource)
+  - [Describe status](#describe-status)
+* [Cleanup](#cleanup)
+* [Future Enhancements](#future-enhancements)
+
+### OAM Operator Architecture
+![oam-operator](https://user-images.githubusercontent.com/54094196/134817952-8af98e13-768b-4d20-a34a-2aa744498844.png)
+
+### Supported Versions
+*  Kubernetes 1.18-1.22
+*  OpenShift 3.11, 4.4-4.8
+*  kubebuilder 3.1.0
+*  controller-gen 0.4.1
+*  kustomize 3.8.7
+
+### Deploy the CRDs
+### Using make
+```bash
+$ make install
+```
+
+### Using kubectl
+
+Deploy the CustomResourceDefinitions (CRDs) for the operator.
+
+```bash
+kubectl apply -k config/crds/
+```
+
+### Deploy the Operator
+
+```bash
+$ make deploy
+```
+
+### Example Usage
+#### Create custom resource
+```
+$ kubectl create -f config/samples/apps_v1beta1_application.yaml
+```
+#### Describe status
+```
+$ kubectl describe Application web-app
+Name:         web-app
+API Version:  apps.oam.cfcn.io/v1beta1
+Kind:         Application
+Metadata:
+  Finalizers:
+    finalizer.app
+Spec:
+  Application Name:  web-app
+  Cloud:
+    Aws:
+      s3:  true
+Events:
+  Type    Reason   Age   From         Message
+  ----    ------   ----  ----         -------
+  Normal  Created  24s   Application  Created S3 Bucket
+  Normal  Created  24s   Application  Created HPA
+  Normal  Created  24s   Application  Created Service
+  Normal  Created  23s   Application  Created Deployment
+  Normal  Created  23s   Application  Created Ingress
+```
+
+![image](https://user-images.githubusercontent.com/54094196/134849413-313137a5-bc45-40fc-89e2-9b433f5fd868.png)
+
+![image](https://user-images.githubusercontent.com/54094196/134816606-95494ff2-561b-4e06-9f39-4a8a4febfdb2.png)
+
+#### Cleanup
+```
+$ make uninstall 
+$ make undeploy
+```
+#### Future Enhancements
+- [ ] Add Support to Multiple Cloud Providers
+- [ ] Support Consul Injectors 
+- [ ] Add Support to External Providers
+- [ ] Add Support to GitOps Deployments

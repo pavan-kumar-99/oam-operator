@@ -1,0 +1,16 @@
+domain: oam.cfcn.io
+layout:
+- go.kubebuilder.io/v3
+projectName: oam-operaror
+repo: oam-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: oam.cfcn.io
+  group: apps
+  kind: Application
+  path: oam-operator/api/v1beta1
+  version: v1beta1
+version: "3"

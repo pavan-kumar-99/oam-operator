@@ -1,0 +1,24 @@
+apiVersion: apps.oam.cfcn.io/v1beta1
+kind: Application
+metadata:
+  name: web-saas
+spec:
+  applicationName: web-saas
+  k8s:
+    prometheus: "true"
+    monitor: "true"
+    statefulset:
+      replicas: 2
+      image: "redis:latest"
+  cloud:
+    aws:
+      s3: "true"
+      ec2: "true"
+    azure:
+      blob: "true"
+      vm: "true"
+    gcp:
+      gke: "true"
+      vm: 
+        enabled: "true"
+        size: "n1-standard-1"     
