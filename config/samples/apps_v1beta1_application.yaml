@@ -1,0 +1,10 @@
+apiVersion: apps.oam.cfcn.io/v1beta1
+kind: Application
+metadata:
+  name: web-app
+spec:
+  applicationName: web-app
+  cloud:
+    aws:
+      s3: "true"
+
