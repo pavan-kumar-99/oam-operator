@@ -16,20 +16,25 @@ import (
 
 // SidecarInjector annotates Pods
 type SidecarInjector struct {
-	Name    string
-	Client  client.Client
-	decoder *admission.Decoder
+	Name          string
+	Client        client.Client
+	SidecarConfig *Config
+	decoder       *admission.Decoder
+}
+
+type Config struct {
+	Containers []corev1.Container `yaml:"containers"`
 }
 
 func shoudInject(pod *corev1.Pod) bool {
-	shouldInjectSidecar, err := strconv.ParseBool(pod.Annotations["inject-logging-sidecar"])
+	shouldInjectSidecar, err := strconv.ParseBool(pod.Annotations["inject-auth-sidecar"])
 
 	if err != nil {
 		shouldInjectSidecar = false
 	}
 
 	if shouldInjectSidecar {
-		alreadyUpdated, err := strconv.ParseBool(pod.Annotations["logging-sidecar-added"])
+		alreadyUpdated, err := strconv.ParseBool(pod.Annotations["auth-sidecar-added"])
 
 		if err == nil && alreadyUpdated {
 			shouldInjectSidecar = false
@@ -60,7 +65,7 @@ func (si *SidecarInjector) Handle(ctx context.Context, req admission.Request) ad
 	if shoudInjectSidecar {
 		log.Info("Injecting sidecar...")
 
-		//pod.Spec.Containers = append(pod.Spec.Containers, si.SidecarConfig.Containers...)
+		pod.Spec.Containers = append(pod.Spec.Containers, si.SidecarConfig.Containers...)
 
 		pod.Annotations["logging-sidecar-added"] = "true"
 
