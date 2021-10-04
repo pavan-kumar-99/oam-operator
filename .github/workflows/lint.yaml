@@ -1,0 +1,42 @@
+name: "GKE Terraform"
+
+on:
+  push:
+    paths:
+    - 'config/samples/**'
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  validate:
+    name: "Install pip"
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Python3 
+        id: python3
+        run: yum install python36 -y
+
+      - name: Install pyyaml
+        id: yamlint
+        run: pip3 install yamllint || true
+          
+      - name: Validate Yaml
+        id: vyaml
+        if: github.event_name == 'pull_request'
+        run: yamllint --no-warnings config/samples/* 
+        continue-on-error: true
+  
+  deploy:
+    name: deploy-toggles
+    runs-on: self-hosted
+    needs: validate
+    steps:      
+      - id: success
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' 
+        run: echo "Deployment successfull"
+
