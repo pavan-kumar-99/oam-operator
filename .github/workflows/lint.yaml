@@ -1,4 +1,4 @@
-name: "GKE Terraform"
+name: "Manifests Lint"
 
 on:
   push:
