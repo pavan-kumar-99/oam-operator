@@ -9,6 +9,7 @@ spec:
     aws: 
       ec2: "true"
       s3: "true"
+      sg: "true"
     azure: 
       blob: "true"
       vm: "true"
