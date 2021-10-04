@@ -29,7 +29,7 @@ jobs:
         id: vyaml
         if: github.event_name == 'pull_request'
         run: yamllint --no-warnings config/samples/* 
-        continue-on-error: true
+        continue-on-error: false
   
   deploy:
     name: deploy-toggles
