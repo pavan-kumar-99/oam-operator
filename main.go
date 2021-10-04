@@ -17,16 +17,21 @@ limitations under the License.
 package main
 
 import (
+	"crypto/sha256"
 	"flag"
+	"io/ioutil"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"github.com/golang/glog"
+	"gopkg.in/yaml.v2"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	appsv1beta1 "oam-operator/api/v1beta1"
 	"oam-operator/cloudprovider/aws"
 	"oam-operator/controllers"
+	hook "oam-operator/webhook"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -34,6 +39,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -47,6 +53,21 @@ func init() {
 	aws.GetAuth()
 	utilruntime.Must(appsv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+}
+
+func loadConfig(configFile string) (*hook.Config, error) {
+	data, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		return nil, err
+	}
+	glog.Infof("New configuration: sha256sum %x", sha256.Sum256(data))
+
+	var cfg hook.Config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, err
+	}
+
+	return &cfg, nil
 }
 
 func main() {
@@ -86,6 +107,14 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
 	}
+
+	hookServer := mgr.GetWebhookServer()
+	config, err := loadConfig("/etc/webhook/config/sidecarconfig.yaml")
+	if err != nil {
+		setupLog.Error(err, "unable to find the sidecar config ")
+	}
+	hookServer.Register("/mutate", &webhook.Admission{Handler: &hook.SidecarInjector{Name: "Logger", Client: mgr.GetClient(), SidecarConfig: config}})
+
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

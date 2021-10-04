@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidecar-injector-configmap
+  namespace: default
+data:
+  sidecarconfig.yaml: |
+    containers:
+    - name: logger
+      image: nginx
+      imagePullPolicy: IfNotPresent
+      command:
+      - echo "In Sidecar Container"    

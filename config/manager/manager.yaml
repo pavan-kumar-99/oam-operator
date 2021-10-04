@@ -31,6 +31,9 @@ spec:
         - --leader-elect
         image: controller:latest
         name: manager
+        volumeMounts:
+        - name: webhook-config
+          mountPath: /etc/webhook/config
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
@@ -54,3 +57,7 @@ spec:
             memory: 20Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
+    volumes:
+    - name: webhook-config
+      configMap:
+       name: sidecar-injector-configmap
