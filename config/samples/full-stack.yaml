@@ -22,4 +22,4 @@ spec:
     prometheus: "true"
     statefulset:
       image: "redis:latest"
-      replicas: 2
+      replicas: 3
