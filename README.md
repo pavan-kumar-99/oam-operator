@@ -1,6 +1,9 @@
 
 # Oam Operator ( The Cloud Journey Accelerator )
 
+![Unit Tests master workflow](https://github.com/pavan-kumar-99/oam-operator/actions/workflows/unit-tests.yaml/badge.svg)
+![Linting master workflow](https://github.com/pavan-kumar-99/oam-operator/actions/workflows/lint.yaml/badge.svg)
+
 A Kubernetes Operator, that would help all the DevOps teams to accelerate their Journey into the cloud and K8s. OAM operator scaffolds all of the code required to create resources across various cloud provides, which includes both K8s and Non-K8s resources. For example an user can create all the required resources for the application ( K8s resources like Deployments, Statefulsets, Ingresses, Non-k8s resources like S3, RDS, EKS clusters ) with 10 lines of YAML. See [Example Usage](#example-usage)
 
 
