@@ -25,7 +25,7 @@ jobs:
       # TODO To add a dedicated Self Hosted Runner for Go Tests
       - name: Remove pre-installed kustomize
         run: rm -f /usr/local/bin/kustomize || true
-      - name: Install Golang
-        run: yum install go -y
+      - name: Install Golang and make
+        run: yum install go make -y
       - name: Perform the test
         run: make test
