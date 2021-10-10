@@ -10,7 +10,7 @@ jobs:
 
   test:
     name: unit-tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     # Pull requests from the same repository won't trigger this checks as they were already triggered by the push
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
@@ -22,7 +22,10 @@ jobs:
           go-version: '1.17'
       # This step is needed as the following one tries to remove
       # kustomize for each test but has no permission to do so
+      # TODO To add a dedicated Self Hosted Runner for Go Tests
       - name: Remove pre-installed kustomize
         run: sudo rm -f /usr/local/bin/kustomize
+      - name: Install Golang
+        run: yum install go -y
       - name: Perform the test
         run: make test
