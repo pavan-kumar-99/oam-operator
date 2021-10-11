@@ -17,13 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: '2'
+          ref: main
+          fetch-depth: 0
        
       - name: Git Install
         run: yum install git -y
      
       - name: Git Diff
-        run: git diff --name-only --diff-filter=ACMRT origin/master HEAD | grep .css$ | xargs
+        run: git diff --name-only origin/master origin/${GITHUB_HEAD_REF}
 
       - name: Install Python3 
         id: python3
