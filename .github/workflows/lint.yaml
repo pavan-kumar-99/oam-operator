@@ -18,6 +18,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: '0'
+       
+      - name: Git Install
+        run: yum install git -y
      
       - name: Git Diff
         run: git diff --name-only origin/master HEAD
