@@ -8,4 +8,4 @@ spec:
   cloud:
     aws:
       s3: "false"
-      ec2: "true"
+      ec2: "false"
