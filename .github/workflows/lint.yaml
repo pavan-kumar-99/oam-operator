@@ -17,13 +17,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          fetch-depth: '0'
+          fetch-depth: '2'
        
       - name: Git Install
         run: yum install git -y
      
       - name: Git Diff
-        run: git diff --name-only master HEAD
+        run: git diff HEAD^ HEAD
 
       - name: Install Python3 
         id: python3
