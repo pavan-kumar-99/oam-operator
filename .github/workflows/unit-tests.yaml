@@ -3,7 +3,11 @@ name: Unit tests
 # Trigger the workflow on pull requests and direct pushes to any branch
 on:
   push:
+    branches:
+    - nullbranch
   pull_request:
+    branches:
+    - nullbranch
 
 
 jobs:
