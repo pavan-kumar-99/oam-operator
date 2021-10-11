@@ -23,7 +23,7 @@ jobs:
         run: yum install git -y
      
       - name: Git Diff
-        run: git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep .css$ | xargs
+        run: git diff --name-only --diff-filter=ACMRT origin/master HEAD | grep .css$ | xargs
 
       - name: Install Python3 
         id: python3
