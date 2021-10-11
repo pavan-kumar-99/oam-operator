@@ -16,6 +16,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: '0'
+     
+      - name: Git Diff
+        run: git diff --name-only origin/master HEAD
 
       - name: Install Python3 
         id: python3
