@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/go-logr/logr"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscale "k8s.io/api/autoscaling/v1"
@@ -40,6 +40,14 @@ import (
 
 	appsv1beta1 "oam-operator/api/v1beta1"
 	aws "oam-operator/cloudprovider/aws"
+)
+
+var (
+	successCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name:      "success_count_total",
+		Help:      "Counter of success actions made.",
+	})
+
 )
 
 // ApplicationReconciler reconciles a Application object
@@ -91,24 +99,28 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			}
 			if err := r.Get(ctx, custom, &hpa); err == nil {
 				logs.Info("Found HPA", "HPA Details", custom)
+				requestCount.Inc()
 				if err := r.Delete(ctx, &hpa); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete HPA: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &svc); err == nil {
 				logs.Info("Found Service", "Service Details", custom)
+				requestCount.Inc()
 				if err := r.Delete(ctx, &svc); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Service: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &deploy); err == nil {
 				logs.Info("Found Deployment", "Deployment Details", custom)
+				requestCount.Inc()
 				if err := r.Delete(ctx, &deploy); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Deployment: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &ing); err == nil {
 				logs.Info("Found Ingress", "Ingress Details", custom)
+				requestCount.Inc()
 				if err := r.Delete(ctx, &ing); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Ingress: %w", err)
 				}
@@ -151,21 +163,25 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	if err := r.Get(ctx, req.NamespacedName, &hpa); err == nil {
 		logs.Info("Found HPA", "HPA Details", req.NamespacedName)
+		requestCount.Inc()
 	} else {
 		r.CreateHpa(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &svc); err == nil {
 		logs.Info("Found Service", "Service Details", req.NamespacedName)
+		requestCount.Inc()
 	} else {
 		r.CreateService(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &deploy); err == nil {
 		logs.Info("Found Deployment", "Deployment Details", req.NamespacedName)
+		requestCount.Inc()
 	} else {
 		r.CreateDeploy(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &ing); err == nil {
 		logs.Info("Found Ingress", "Ingress Details", req.NamespacedName)
+		requestCount.Inc()
 	} else {
 		r.CreateIngress(ctx, req, app, logs)
 	}
@@ -371,6 +387,7 @@ func removeString(slice []string, s string) (result []string) {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	prometheus.MustRegister(successCount)
 	r.recorder = mgr.GetEventRecorderFor("Application")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1beta1.Application{}).

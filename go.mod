@@ -8,6 +8,7 @@ require (
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2
+	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/common v0.10.0
 	github.com/sirupsen/logrus v1.6.0
 	gopkg.in/yaml.v2 v2.3.0
