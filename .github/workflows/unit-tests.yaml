@@ -4,10 +4,10 @@ name: Unit tests
 on:
   push:
     branches:
-    - nullbranch
+    - master
   pull_request:
     branches:
-    - nullbranch
+    - master
 
 
 jobs:
@@ -33,3 +33,5 @@ jobs:
         run: yum install go make -y
       - name: Perform the test
         run: make test
+      - name: Build the binary
+        run: make
