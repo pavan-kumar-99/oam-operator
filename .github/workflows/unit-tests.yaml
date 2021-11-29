@@ -33,3 +33,5 @@ jobs:
         run: yum install go make -y
       - name: Perform the test
         run: make test
+      - name: Build the binary
+        run: make
