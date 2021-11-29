@@ -5,10 +5,10 @@ on:
     paths:
     - 'config/samples/**'
     branches:
-      - master
+      - nullvoid
   pull_request:
     branches:
-      - master
+      - nullvoid
 
 jobs:
   validate:
