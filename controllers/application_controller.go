@@ -45,7 +45,7 @@ import (
 var (
 	successCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name:      "success_count_total",
-		Help:      "Counter of success actions made.",
+		Help:      "Counter of success add actions made.",
 	})
 
 )
