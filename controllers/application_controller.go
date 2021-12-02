@@ -21,8 +21,9 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/go-logr/logr"
+	"github.com/prometheus/client_golang/prometheus"
 	appsv1 "k8s.io/api/apps/v1"
 	autoscale "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -39,15 +40,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	appsv1beta1 "oam-operator/api/v1beta1"
-	aws "oam-operator/cloudprovider/aws"
 )
 
 var (
-	successCount = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name:      "success_count_total",
-		Help:      "Counter of success add actions made.",
+	SuccessCount = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "success_count_total",
+		Help: "Counter of success add actions made.",
 	})
-
 )
 
 // ApplicationReconciler reconciles a Application object
@@ -60,6 +59,11 @@ type ApplicationReconciler struct {
 //+kubebuilder:rbac:groups=apps.oam.cfcn.io,resources=applications,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=apps.oam.cfcn.io,resources=applications/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=apps.oam.cfcn.io,resources=applications/finalizers,verbs=update
+//+kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=v1,resources=*,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=apps,resources=*,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=networking.k8s.io,resources=*,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups="",resources=*,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -99,28 +103,28 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			}
 			if err := r.Get(ctx, custom, &hpa); err == nil {
 				logs.Info("Found HPA", "HPA Details", custom)
-				requestCount.Inc()
+				SuccessCount.Inc()
 				if err := r.Delete(ctx, &hpa); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete HPA: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &svc); err == nil {
 				logs.Info("Found Service", "Service Details", custom)
-				requestCount.Inc()
+				SuccessCount.Inc()
 				if err := r.Delete(ctx, &svc); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Service: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &deploy); err == nil {
 				logs.Info("Found Deployment", "Deployment Details", custom)
-				requestCount.Inc()
+				SuccessCount.Inc()
 				if err := r.Delete(ctx, &deploy); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Deployment: %w", err)
 				}
 			}
 			if err := r.Get(ctx, custom, &ing); err == nil {
 				logs.Info("Found Ingress", "Ingress Details", custom)
-				requestCount.Inc()
+				SuccessCount.Inc()
 				if err := r.Delete(ctx, &ing); err != nil {
 					return ctrl.Result{}, fmt.Errorf("Unable to Delete Ingress: %w", err)
 				}
@@ -131,7 +135,6 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 			}
 			if shouldCreateS3 {
 				logs.Info("S3 is enabled")
-				aws.DeleteS3(req.Name + req.Namespace)
 			}
 			logs.Info("Executing finalizer in app")
 
@@ -146,12 +149,11 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 	if err != nil {
 		shouldCreateS3 = false
 	}
-	if aws.ListS3(req.Name + req.Namespace) {
-		logs.Info("Bucket already exists")
+	if shouldCreateS3 {
+		logs.Info("Not creating bucket")
 	} else {
 		if shouldCreateS3 {
 			logs.Info("S3 is enabled")
-			aws.CreateS3(req.Name + req.Namespace)
 			app.Status.S3BucketName = req.Name + req.Namespace
 			if err := r.Status().Update(ctx, &app); err != nil {
 				logs.Error(err, "unable to update App status")
@@ -163,25 +165,25 @@ func (r *ApplicationReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 
 	if err := r.Get(ctx, req.NamespacedName, &hpa); err == nil {
 		logs.Info("Found HPA", "HPA Details", req.NamespacedName)
-		requestCount.Inc()
+		SuccessCount.Inc()
 	} else {
 		r.CreateHpa(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &svc); err == nil {
 		logs.Info("Found Service", "Service Details", req.NamespacedName)
-		requestCount.Inc()
+		SuccessCount.Inc()
 	} else {
 		r.CreateService(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &deploy); err == nil {
 		logs.Info("Found Deployment", "Deployment Details", req.NamespacedName)
-		requestCount.Inc()
+		SuccessCount.Inc()
 	} else {
 		r.CreateDeploy(ctx, req, app, logs)
 	}
 	if err := r.Get(ctx, req.NamespacedName, &ing); err == nil {
 		logs.Info("Found Ingress", "Ingress Details", req.NamespacedName)
-		requestCount.Inc()
+		SuccessCount.Inc()
 	} else {
 		r.CreateIngress(ctx, req, app, logs)
 	}
@@ -387,7 +389,6 @@ func removeString(slice []string, s string) (result []string) {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	prometheus.MustRegister(successCount)
 	r.recorder = mgr.GetEventRecorderFor("Application")
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&appsv1beta1.Application{}).

@@ -19,6 +19,7 @@ package main
 import (
 	"crypto/sha256"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -29,7 +30,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	appsv1beta1 "oam-operator/api/v1beta1"
-	"oam-operator/cloudprovider/aws"
 	"oam-operator/controllers"
 	hook "oam-operator/webhook"
 
@@ -39,7 +39,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
+	"sigs.k8s.io/controller-runtime/pkg/metrics"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -50,7 +50,9 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	aws.GetAuth()
+	//aws.GetAuth()
+	metrics.Registry.MustRegister(controllers.SuccessCount)
+	fmt.Println("Register Done")
 	utilruntime.Must(appsv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -108,12 +110,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	hookServer := mgr.GetWebhookServer()
-	config, err := loadConfig("/etc/webhook/config/sidecarconfig.yaml")
-	if err != nil {
-		setupLog.Error(err, "unable to find the sidecar config ")
-	}
-	hookServer.Register("/mutate", &webhook.Admission{Handler: &hook.SidecarInjector{Name: "Logger", Client: mgr.GetClient(), SidecarConfig: config}})
+	// hookServer := mgr.GetWebhookServer()
+	// config, err := loadConfig("/etc/webhook/config/sidecarconfig.yaml")
+	// if err != nil {
+	// 	setupLog.Error(err, "unable to find the sidecar config ")
+	// }
+	// hookServer.Register("/mutate", &webhook.Admission{Handler: &hook.SidecarInjector{Name: "Logger", Client: mgr.GetClient(), SidecarConfig: config}})
 
 	//+kubebuilder:scaffold:builder
 

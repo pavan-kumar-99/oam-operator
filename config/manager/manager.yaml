@@ -29,11 +29,11 @@ spec:
         - /manager
         args:
         - --leader-elect
-        image: controller:latest
+        image: greypavan/medium-manifests:controller
         name: manager
-        volumeMounts:
-        - name: webhook-config
-          mountPath: /etc/webhook/config
+        # volumeMounts:
+        # - name: webhook-config
+        #   mountPath: /etc/webhook/config
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:
@@ -57,7 +57,7 @@ spec:
             memory: 20Mi
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
-    volumes:
-    - name: webhook-config
-      configMap:
-       name: sidecar-injector-configmap
+    # volumes:
+    # - name: webhook-config
+    #   configMap:
+    #    name: sidecar-injector-configmap
