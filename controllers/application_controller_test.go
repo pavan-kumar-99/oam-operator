@@ -44,7 +44,7 @@ var _ = Describe("Application", func() {
 			Eventually(func() error {
 				return k8sClient.Get(context.Background(), DeployName, deploy)
 			}, time.Second*5).Should(Succeed())
-			Expect(deploy.Spec.Replicas).To(Equal(proto.Int32(1)))
+			Expect(deploy.Spec.Replicas).To(Equal(proto.Int32(2)))
 		})
 	})
 })
